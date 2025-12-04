@@ -1,0 +1,286 @@
+// ...existing code...
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Profile — Crypto Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#071026;--card:#0b1220;--accent:#00d1b2;--muted:#94a3b8;}
+    *{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;}
+    body{margin:0;min-height:100vh;background:linear-gradient(180deg,#071023,#04111b);color:#e6eef6;padding:20px;}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;}
+    .brand{display:flex;align-items:center;gap:12px;}
+    .logo{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#6be1ff);display:flex;align-items:center;justify-content:center;font-weight:700;color:#042029;}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);}
+    .layout{display:grid;grid-template-columns:320px 1fr 320px;gap:16px;}
+    .section{padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);}
+    h2{margin:0 0 8px 0;font-size:16px;}
+    .btn{background:linear-gradient(90deg,var(--accent),#6be1ff);color:#042029;border:none;padding:8px 10px;border-radius:8px;cursor:pointer;font-weight:600;}
+    .small{color:var(--muted);font-size:13px;}
+    .muted{color:var(--muted);font-size:13px;}
+    .coin-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;border-radius:8px;}
+    .coin-name{display:flex;gap:8px;align-items:center;}
+    .cart-item{display:flex;justify-content:space-between;gap:8px;padding:6px 0;}
+    .flex{display:flex;gap:8px;align-items:center;}
+    @media (max-width:980px){.layout{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+  <div id="shared-nav"></div>
+
+  <div class="top">
+    <div class="brand">
+      <div class="logo">CT</div>
+      <div>
+        <div style="font-weight:700">Crypto Tracker</div>
+        <div class="muted">Profile & trading demo</div>
+      </div>
+    </div>
+    <div class="flex">
+      <a href="index.html" class="btn">Home</a>
+      <button id="logoutBtn" class="btn" style="background:#ff7b7b">Logout</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- Profile -->
+    <div class="section card">
+      <h2>Profile</h2>
+      <div id="profileArea" class="small muted">Loading...</div>
+      <hr/>
+      <h2>Holdings</h2>
+      <div id="holdingsArea" class="small muted">No holdings yet</div>
+    </div>
+
+    <!-- Coin List -->
+    <div class="section card">
+      <h2>Market — Top coins</h2>
+      <div id="coinsList">Loading coins…</div>
+    </div>
+
+    <!-- Cart -->
+    <div class="section card">
+      <h2>Cart</h2>
+      <div id="cartItems" style="min-height:120px">Empty</div>
+      <div style="margin-top:12px" id="cartSummary" class="small muted"></div>
+      <div style="margin-top:12px;display:flex;gap:8px;">
+        <button id="checkoutBtn" class="btn">Checkout</button>
+        <button id="clearCart" class="btn" style="background:#666">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- trade modal (simple) -->
+  <div id="tradeModal" style="display:none;position:fixed;inset:0;background:rgba(2,6,23,0.7);align-items:center;justify-content:center;">
+    <div style="width:420px;background:#071226;padding:18px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);">
+      <h3 id="modalTitle">Trade</h3>
+      <div id="modalBody">
+        <div class="small" id="modalCoin"></div>
+        <label class="muted">Quantity</label>
+        <input id="tradeQty" type="number" min="0" step="any" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit"/>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+          <button id="cancelTrade" class="btn" style="background:#666">Cancel</button>
+          <button id="confirmTrade" class="btn">Add to cart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="nav.js"></script>
+  <script>
+    const COINGECKO_MARKETS = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=false';
+    const profileArea = document.getElementById('profileArea');
+    const holdingsArea = document.getElementById('holdingsArea');
+    const coinsList = document.getElementById('coinsList');
+    const cartItemsEl = document.getElementById('cartItems');
+    const cartSummary = document.getElementById('cartSummary');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    const clearCartBtn = document.getElementById('clearCart');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    const tradeModal = document.getElementById('tradeModal');
+    const modalCoin = document.getElementById('modalCoin');
+    const tradeQty = document.getElementById('tradeQty');
+    const confirmTrade = document.getElementById('confirmTrade');
+    const cancelTrade = document.getElementById('cancelTrade');
+    const modalTitle = document.getElementById('modalTitle');
+
+    let coins = [];
+    let currentTrade = null; // { coin, type }
+    let cart = JSON.parse(localStorage.getItem('ct_cart') || '[]');
+
+    function getLocalUser(){
+      return JSON.parse(localStorage.getItem('ct_user') || 'null');
+    }
+
+    function saveCart(){ localStorage.setItem('ct_cart', JSON.stringify(cart)); renderCart(); }
+
+    function renderProfile(){
+      const user = getLocalUser();
+      if(!user){
+        // if not logged in redirect to home
+        location.href = 'index.html';
+        return;
+      }
+      profileArea.innerHTML = `
+        <div style="font-weight:700">${escapeHtml(user.username)}</div>
+        <div class="muted">${escapeHtml(user.email)}</div>
+        <div style="margin-top:8px;" class="small">Balance: $${(user.balanceUSD ?? 0).toFixed(2)}</div>
+        <div class="muted small">Member since ${new Date(user.createdAt).toLocaleDateString()}</div>
+      `;
+      const holdings = JSON.parse(localStorage.getItem('ct_holdings') || '[]');
+      if(holdings.length===0) holdingsArea.innerHTML = '<div class="muted small">No holdings — buy some coins</div>';
+      else {
+        holdingsArea.innerHTML = holdings.map(h=>`<div class="muted small">${escapeHtml(h.symbol.toUpperCase())} — ${h.qty} @ avg ${h.avgPrice.toFixed(2)}</div>`).join('');
+      }
+    }
+
+    function renderCoins(){
+      if(!coins.length) return;
+      coinsList.innerHTML = coins.map((c, i)=>`
+        <div class="coin-row" data-id="${c.id}">
+          <div class="coin-name">
+            <div style="width:28px;height:28px;border-radius:6px;background:#071226;display:flex;align-items:center;justify-content:center"><img src="${c.image}" width="20" height="20" alt=""></div>
+            <div>
+              <div style="font-weight:600">${escapeHtml(c.name)} <span class="muted">(${escapeHtml(c.symbol.toUpperCase())})</span></div>
+              <div class="muted small">$${c.current_price.toLocaleString()} • mcap $${(c.market_cap/1e9).toFixed(2)}B</div>
+            </div>
+          </div>
+          <div class="flex">
+            <button class="btn" data-action="buy" data-index="${i}">Buy</button>
+            <button class="btn" style="background:#ff8a8a" data-action="sell" data-index="${i}">Sell</button>
+          </div>
+        </div>
+      `).join('');
+      coinsList.querySelectorAll('button[data-action]').forEach(btn=>{
+        btn.addEventListener('click', (e)=>{
+          const idx = +btn.getAttribute('data-index');
+          openTradeModal(btn.getAttribute('data-action'), coins[idx]);
+        });
+      });
+    }
+
+    function renderCart(){
+      if(cart.length===0){
+        cartItemsEl.innerHTML = '<div class="muted small">Cart is empty</div>';
+        cartSummary.innerText = '';
+        return;
+      }
+      cartItemsEl.innerHTML = cart.map((it, idx)=>`
+        <div class="cart-item">
+          <div>
+            <div style="font-weight:600">${escapeHtml(it.coinName)} <span class="muted">(${escapeHtml(it.symbol.toUpperCase())})</span></div>
+            <div class="muted small">${it.type.toUpperCase()} ${it.qty} @ $${it.price.toFixed(2)}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end">
+            <div style="font-weight:700">$${(it.qty*it.price).toFixed(2)}</div>
+            <div style="margin-top:6px"><button class="btn" data-remove="${idx}" style="background:#666">Remove</button></div>
+          </div>
+        </div>
+      `).join('');
+      cartItemsEl.querySelectorAll('button[data-remove]').forEach(b=>{
+        b.addEventListener('click', () => {
+          const i = +b.getAttribute('data-remove');
+          cart.splice(i,1); saveCart();
+        });
+      });
+      const total = cart.reduce((s, it)=> s + it.qty*it.price, 0);
+      cartSummary.innerText = `Items: ${cart.length} • Total: $${total.toFixed(2)}`;
+    }
+
+    function openTradeModal(type, coin){
+      currentTrade = { type, coin };
+      modalTitle.innerText = `${type.toUpperCase()} ${coin.name}`;
+      modalCoin.innerText = `${coin.symbol.toUpperCase()} — $${coin.current_price.toFixed(2)}`;
+      tradeQty.value = '';
+      tradeModal.style.display = 'flex';
+      tradeQty.focus();
+    }
+
+    confirmTrade.addEventListener('click', ()=>{
+      const qty = parseFloat(tradeQty.value);
+      if (!qty || qty <= 0) return alert('Enter a valid quantity');
+      const { coin, type } = currentTrade;
+      cart.push({
+        coinId: coin.id,
+        coinName: coin.name,
+        symbol: coin.symbol,
+        qty,
+        price: coin.current_price,
+        type
+      });
+      saveCart();
+      tradeModal.style.display = 'none';
+    });
+    cancelTrade.addEventListener('click', ()=> tradeModal.style.display = 'none');
+
+    async function checkout(){
+      const user = getLocalUser();
+      if(!user) return alert('Sign in first');
+      if(cart.length===0) return alert('Cart empty');
+      await updateLocalHoldingsFromCart(cart);
+      cart = [];
+      saveCart();
+      renderProfile();
+      alert('Trade executed (local demo).');
+    }
+
+    async function updateLocalHoldingsFromCart(trades){
+      const holdings = JSON.parse(localStorage.getItem('ct_holdings') || '[]');
+      const user = getLocalUser();
+      let balance = user.balanceUSD ?? 0;
+      for(const t of trades){
+        const total = t.qty * t.price;
+        const sym = t.symbol.toLowerCase();
+        const idx = holdings.findIndex(h=>h.symbol === sym);
+        if(t.type === 'buy'){
+          if(idx === -1){
+            holdings.push({ symbol: sym, qty: t.qty, avgPrice: t.price });
+          } else {
+            const existing = holdings[idx];
+            const newQty = existing.qty + t.qty;
+            const newAvg = ((existing.avgPrice * existing.qty) + (t.price * t.qty)) / newQty;
+            holdings[idx] = { symbol: sym, qty: newQty, avgPrice: newAvg };
+          }
+          balance -= total;
+        } else {
+          if(idx === -1 || holdings[idx].qty < t.qty){
+            console.warn('Attempted to sell more than holdings for', sym);
+            continue;
+          }
+          holdings[idx].qty -= t.qty;
+          balance += total;
+          if(holdings[idx].qty <= 0) holdings.splice(idx,1);
+        }
+      }
+      localStorage.setItem('ct_holdings', JSON.stringify(holdings));
+      user.balanceUSD = balance;
+      localStorage.setItem('ct_user', JSON.stringify(user));
+    }
+
+    async function loadCoins(){
+      try{
+        const r = await fetch(COINGECKO_MARKETS);
+        coins = await r.json();
+      }catch(e){
+        coins = [];
+        console.error('coins fetch failed', e);
+      }
+      renderCoins();
+    }
+
+    function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+    // init
+    renderProfile();
+    renderCart();
+    loadCoins();
+
+    checkoutBtn.addEventListener('click', checkout);
+    clearCartBtn.addEventListener('click', ()=> { cart=[]; saveCart(); });
+    logoutBtn.addEventListener('click', ()=> { localStorage.removeItem('ct_user'); location.href='index.html'; });
+  </script>
+</body>
+</html>

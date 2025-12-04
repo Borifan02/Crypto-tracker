@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>News — Crypto Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="pages.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* Enhanced styles for beauty, responsiveness, and animations */
+    body { 
+      font-family: 'Inter', sans-serif; 
+      line-height: 1.6; 
+      color: #e2e8f0; 
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%); 
+      min-height: 100vh; 
+      overflow-x: hidden;
+      position: relative;
+      margin: 0;
+      padding: 0;
+    }
+    #particles-js {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.05); 
+      border-radius: 20px; 
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3); 
+      backdrop-filter: blur(10px); 
+      padding: 2rem; 
+      margin: 2rem auto; 
+      max-width: 900px;
+      animation: fadeInUp 1s ease-out;
+      position: relative;
+      z-index: 1;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    h1 { 
+      font-family: 'Poppins', sans-serif; 
+      font-weight: 700; 
+      color: #ffffff; 
+      text-align: center; 
+      margin-bottom: 2rem; 
+      font-size: 2.5rem;
+      background: linear-gradient(45deg, #667eea, #764ba2); 
+      -webkit-background-clip: text; 
+      -webkit-text-fill-color: transparent; 
+      background-clip: text;
+      animation: slideInDown 1.2s ease-out;
+    }
+    @keyframes slideInDown {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .search { 
+      display: flex; 
+      gap: 1rem; 
+      justify-content: center; 
+      margin-bottom: 2rem; 
+      animation: fadeIn 1.5s ease-in;
+    }
+    #coinSearch { 
+      flex: 1; 
+      max-width: 400px; 
+      padding: 1rem; 
+      border: 2px solid rgba(102, 126, 234, 0.3); 
+      border-radius: 12px; 
+      background: rgba(255, 255, 255, 0.1); 
+      color: #e2e8f0; 
+      font-size: 1rem; 
+      transition: all 0.3s ease;
+    }
+    #coinSearch:focus { 
+      outline: none; 
+      border-color: #667eea; 
+      box-shadow: 0 0 15px rgba(102, 126, 234, 0.4); 
+      transform: scale(1.02);
+    }
+    #coinSearch::placeholder { 
+      color: #a0aec0; 
+    }
+    #searchBtn { 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+      border: none; 
+      padding: 1rem 1.5rem; 
+      border-radius: 12px; 
+      cursor: pointer; 
+      font-size: 1rem; 
+      font-weight: 600; 
+      color: white; 
+      transition: all 0.3s ease; 
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(102, 126, 234, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0); }
+    }
+    #searchBtn:hover { 
+      transform: translateY(-3px); 
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    }
+    #result { 
+      background: rgba(255, 255, 255, 0.1); 
+      border-radius: 15px; 
+      padding: 1.5rem; 
+      border: 1px solid rgba(102, 126, 234, 0.2); 
+      animation: fadeInUp 0.8s ease-out;
+      min-height: 200px;
+      transition: all 0.3s ease;
+    }
+    #result:hover { 
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+    }
+    #result img { 
+      border-radius: 50%; 
+      transition: transform 0.3s ease;
+    }
+    #result img:hover { 
+      transform: scale(1.1); 
+    }
+    #result a { 
+      color: #667eea; 
+      text-decoration: none; 
+      transition: color 0.3s ease;
+    }
+    #result a:hover { 
+      color: #764ba2; 
+    }
+    #result ul { 
+      list-style: none; 
+      padding: 0; 
+    }
+    #result ul li { 
+      padding: 0.5rem 0; 
+      border-bottom: 1px solid rgba(226, 232, 240, 0.2); 
+      transition: all 0.3s ease;
+    }
+    #result ul li:hover { 
+      padding-left: 1rem; 
+    }
+    hr { 
+      border: none; 
+      height: 1px; 
+      background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.5), transparent); 
+      margin: 1.5rem 0;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @media (max-width: 768px) { 
+      .card { margin: 1rem; padding: 1rem; } 
+      h1 { font-size: 2rem; }
+      .search { flex-direction: column; align-items: center; }
+      #coinSearch { max-width: 100%; }
+    }
+  </style>
+</head>
+<body class= "card">
+  <div id="particles-js"></div>
+  <div id="shared-nav"></div>
+
+  <div style = "margin:100px">
+    <h1>Coin News & Info</h1>
+    <div class="search">
+      <input id="coinSearch" placeholder="Search coin (e.g. bitcoin, ethereum)" />
+      <button id="searchBtn" style="background:linear-gradient(90deg,#00d1b2,#6be1ff);border:none;padding:8px 12px;border-radius:8px;cursor:pointer">Search</button>
+    </div>
+
+    <div id="result" class="card">Search for a coin to view news and links.</div>
+  </div>
+
+  <script src="nav.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <script>
+    particlesJS('particles-js', {
+      "particles": {
+        "number": {
+          "value": 80,
+          "density": {
+            "enable": true,
+            "value_area": 800
+          }
+        },
+        "color": {
+          "value": ["#667eea", "#764ba2", "#ffffff"]
+        },
+        "shape": {
+          "type": "circle",
+          "stroke": {
+            "width": 0,
+            "color": "#000000"
+          },
+          "polygon": {
+            "nb_sides": 5
+          }
+        },
+        "opacity": {
+          "value": 0.5,
+          "random": false,
+          "anim": {
+            "enable": false,
+            "speed": 1,
+            "opacity_min": 0.1,
+            "sync": false
+          }
+        },
+        "size": {
+          "value": 3,
+          "random": true,
+          "anim": {
+            "enable": false,
+            "speed": 40,
+            "size_min": 0.1,
+            "sync": false
+          }
+        },
+        "line_linked": {
+          "enable": true,
+          "distance": 150,
+          "color": "#667eea",
+          "opacity": 0.4,
+          "width": 1
+        },
+        "move": {
+          "enable": true,
+          "speed": 2,
+          "direction": "none",
+          "random": false,
+          "straight": false,
+          "out_mode": "out",
+          "bounce": false,
+          "attract": {
+            "enable": false,
+            "rotateX": 600,
+            "rotateY": 1200
+          }
+        }
+      },
+      "interactivity": {
+        "detect_on": "canvas",
+        "events": {
+          "onhover": {
+            "enable": true,
+            "mode": ["grab", "repulse"]
+          },
+          "onclick": {
+            "enable": true,
+            "mode": "push"
+          },
+          "resize": true
+        },
+        "modes": {
+          "grab": {
+            "distance": 200,
+            "line_linked": {
+              "opacity": 1
+            }
+          },
+          "bubble": {
+            "distance": 400,
+            "size": 40,
+            "duration": 2,
+            "opacity": 8,
+            "speed": 3
+          },
+          "repulse": {
+            "distance": 150,
+            "duration": 0.4
+          },
+          "push": {
+            "particles_nb": 4
+          },
+          "remove": {
+            "particles_nb": 2
+          }
+        }
+      },
+      "retina_detect": true
+    });
+    const searchBtn = document.getElementById('searchBtn');
+    const coinSearch = document.getElementById('coinSearch');
+    const result = document.getElementById('result');
+
+    function stripHtml(html){ const d = document.createElement('div'); d.innerHTML = html || ''; return d.textContent || d.innerText || ''; }
+
+    async function showCoin(idOrQuery){
+      result.innerHTML = 'Loading…';
+      try{
+        // try to fetch by id if exact, else search list for id
+        let id = idOrQuery.toLowerCase().trim();
+        // if user typed full name not id, try lookup
+        const list = await fetch('https://api.coingecko.com/api/v3/coins/list').then(r=>r.json());
+        const found = list.find(l => l.id === id || l.symbol === id || l.name.toLowerCase() === id);
+        if (!found) {
+          result.innerHTML = '<div class="news-item">Coin not found.</div>';
+          return;
+        }
+        const coin = await fetch('https://api.coingecko.com/api/v3/coins/' + found.id + '?localization=false&tickers=false&market_data=true&community_data=true&developer_data=true&sparkline=false').then(r=>r.json());
+        const desc = stripHtml(coin.description?.en || '');
+        const homepage = (coin.links?.homepage || []).filter(Boolean).slice(0,3);
+        const repos = coin.links?.repos_url || {};
+        result.innerHTML = `
+          <div style="display:flex;gap:12px;align-items:center">
+            <img src="${coin.image?.thumb||''}" width="36" height="36" alt="">
+            <div>
+              <div style="font-weight:700">${coin.name} <span style="color:#94a3b8">(${coin.symbol.toUpperCase()})</span></div>
+              <div style="color:#94a3b8;font-size:13px">Current price: $${coin.market_data?.current_price?.usd ?? 'N/A'}</div>
+            </div>
+          </div>
+          <hr/>
+          <div style="margin-top:8px">${desc ? desc.substring(0,1200) + (desc.length>1200?'...':'') : 'No description available.'}</div>
+          <hr/>
+          <div><strong>Links</strong>
+            <ul>
+              ${homepage.map(h=>`<li><a href="${h}" target="_blank" rel="noopener">${h}</a></li>`).join('') || '<li>—</li>'}
+            </ul>
+          </div>
+          <div><strong>Repos</strong>
+            <ul>
+              ${Object.keys(repos).map(k=>repos[k]).flat().filter(Boolean).slice(0,5).map(r=>`<li><a href="${r}" target="_blank" rel="noopener">${r}</a></li>`).join('') || '<li>—</li>'}
+            </ul>
+          </div>
+        `;
+      }catch(e){
+        result.innerHTML = '<div class="news-item">Failed to load coin data.</div>';
+        console.error(e);
+      }
+    }
+
+    searchBtn.addEventListener('click', ()=> showCoin(coinSearch.value));
+    coinSearch.addEventListener('keyup', (e)=> { if (e.key === 'Enter') showCoin(coinSearch.value); });
+  </script>
+</body>
+</html>
