@@ -12,20 +12,13 @@ let priceChart;
 // Fetch top 10 coins from backend
 async function fetchCoins() {
   try {
-    console.log('Fetching coins from /api/coins');
     const res = await fetch('/api/coins');
-    console.log('Response status:', res.status);
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error('Error response:', errorText);
-      throw new Error(`HTTP ${res.status}: ${errorText}`);
-    }
+    if (!res.ok) throw new Error('Failed to fetch coins');
     coinsData = await res.json();
-    console.log('Coins data loaded:', coinsData.length, 'coins');
     displayCoins(coinsData);
   } catch (err) {
-    console.error('Fetch error:', err);
-    coinsBody.innerHTML = `<tr><td colspan="7">Error: ${err.message}</td></tr>`;
+    coinsBody.innerHTML = `<tr><td colspan="7">Failed to load data. Make sure backend is running.</td></tr>`;
+    console.error(err);
   }
 }
 

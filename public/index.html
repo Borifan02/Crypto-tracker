@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Crypto Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="pages.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- Shared Navigation -->
+  <div id="shared-nav"></div>
+
+  <header class="site-header">
+    <h1>Crypto Tracker</h1>
+    <div class="controls">
+      <input id="search" placeholder="Search by name or symbol" />
+      <select id="filter" title="Filter coins" aria-label="Filter coins">
+        <option value="all">All</option>
+        <option value="gainers">Top Gainers (24h)</option>
+        <option value="losers">Top Losers (24h)</option>
+        <option value="topcap">Top Market Cap</option>
+      </select>
+      <button id="refreshBtn">Refresh</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-content">
+        <h1>Track Cryptocurrency Prices in Real-Time</h1>
+        <p>Stay updated with Bitcoin, Ethereum, and top altcoins.</p>
+        <a href="#coinsTable" class="btn-hero">Get Started</a>
+      </div>
+    </section>
+
+    <section class="dashboard">
+      <div class="table-wrap">
+        <table id="coinsTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Coin</th>
+              <th>Price (USD)</th>
+              <th>24h %</th>
+              <th>Market Cap</th>
+              <th>Volume (24h)</th>
+              <th>Sparkline (7d)</th>
+            </tr>
+          </thead>
+          <tbody id="coinsBody"></tbody>
+        </table>
+      </div>
+
+      <aside class="details">
+        <h2 id="detailTitle">Click a coin to see chart</h2>
+        <canvas id="priceChart" width="400" height="300"></canvas>
+        <div class="chart-controls">
+          <label>Days:
+            <select id="chartDays">
+              <option value="7">7</option>
+              <option value="14">14</option>
+              <option value="30" selected>30</option>
+              <option value="90">90</option>
+              <option value="180">180</option>
+              <option value="365">365</option>
+            </select>
+          </label>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+ <footer>
+  <small>&copy; 2025 Crypto Tracker. Built using CoinGecko API • Frontend: Vanilla JS + Chart.js • Backend: Express</small>
+</footer>
+
+
+  <script src="nav.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

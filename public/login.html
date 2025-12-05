@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login — Crypto Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0f1724;--accent:#00d1b2;--muted:#94a3b8;--glass:rgba(255,255,255,0.03);}
+    *{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+    html,body{height:100%;margin:0;background:
+      radial-gradient(1200px 600px at 10% 10%, rgba(0,209,178,0.06), transparent 10%),
+      linear-gradient(180deg,#071023 0%, #081226 50%, #071023 100%);color:#e6eef6;}
+    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;}
+    .card{width:100%;max-width:420px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);
+      border:1px solid rgba(255,255,255,0.04);padding:28px;border-radius:14px;box-shadow:0 8px 30px rgba(2,6,23,0.6);}
+    .brand{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+    .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#6be1ff);display:flex;align-items:center;justify-content:center;font-weight:700;color:#042029;}
+    h1{margin:0;font-size:20px;}
+    p.lead{margin:6px 0 18px;color:var(--muted);font-size:13px;}
+    form{display:grid;gap:12px;}
+    .input{background:var(--glass);border:1px solid rgba(255,255,255,0.03);padding:12px 14px;border-radius:10px;color:inherit;outline:none;}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;}
+    .row{display:flex;align-items:center;justify-content:space-between;}
+    .actions{display:flex;align-items:center;justify-content:space-between;margin-top:4px;}
+    .btn{background:linear-gradient(90deg,var(--accent),#6be1ff);color:#032022;border:none;padding:10px 14px;border-radius:10px;font-weight:600;cursor:pointer;box-shadow:0 6px 18px rgba(3,12,18,0.45);}
+    .btn:disabled{opacity:0.65;cursor:not-allowed;}
+    .alt{font-size:13px;color:var(--muted);text-decoration:none;}
+    .msg{padding:10px;border-radius:8px;font-size:13px;}
+    .msg.success{background:rgba(0,210,178,0.08);color:#b9f4e9;border:1px solid rgba(0,210,178,0.12);}
+    .msg.error{background:rgba(255,86,86,0.06);color:#ffc9c9;border:1px solid rgba(255,86,86,0.08);}
+    .toggle-pass{background:transparent;border:none;color:var(--muted);cursor:pointer;padding:0 6px;}
+    .small{font-size:12px;color:var(--muted);text-align:center;margin-top:12px;}
+    .spinner{width:16px;height:16px;border:2px solid rgba(0,0,0,0.08);border-top-color:#fff;border-radius:50%;animation:spin .9s linear infinite;display:inline-block;vertical-align:middle}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media (max-width:480px){.card{padding:20px;border-radius:12px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" role="region" aria-label="Login form">
+      <div class="brand">
+        <div class="logo">CT</div>
+        <div>
+          <h1>Welcome back</h1>
+          <p class="lead">Sign in to manage your portfolio and track prices.</p>
+        </div>
+      </div>
+
+      <div id="alertArea" aria-live="polite"></div>
+
+      <form id="loginForm" novalidate>
+        <div>
+          <label for="identifier">Email or Username</label>
+          <input id="identifier" class="input" name="identifier" type="text" placeholder="you@example.com or username" required />
+        </div>
+
+        <div>
+          <label for="password">Password</label>
+          <div style="display:flex;align-items:center;">
+            <input id="password" class="input" name="password" type="password" placeholder="Your password" required minlength="8" style="flex:1;" />
+            <button type="button" id="togglePwd" class="toggle-pass" aria-label="Show password">Show</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <label style="display:flex;align-items:center;gap:8px;"><input id="remember" type="checkbox" /> <span style="color:var(--muted);font-size:13px">Remember me</span></label>
+          <a href="signup.html" class="alt">Create account</a>
+        </div>
+
+        <div class="actions">
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button id="submitBtn" class="btn" type="submit">Sign in</button>
+            <div id="loader" style="display:none;"><span class="spinner" aria-hidden="true"></span></div>
+          </div>
+          <a href="#" class="alt">Forgot password?</a>
+        </div>
+
+        <div class="small">By signing in you agree to the service terms.</div>
+        <a href="index.html">Back to Home</a>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "http://localhost:3000"; // adjust if needed
+    const form = document.getElementById('loginForm');
+    const alertArea = document.getElementById('alertArea');
+    const submitBtn = document.getElementById('submitBtn');
+    const loader = document.getElementById('loader');
+    const togglePwd = document.getElementById('togglePwd');
+
+    togglePwd.addEventListener('click', () => {
+      const p = document.getElementById('password');
+      if (p.type === 'password') { p.type = 'text'; togglePwd.textContent = 'Hide'; }
+      else { p.type = 'password'; togglePwd.textContent = 'Show'; }
+      p.focus();
+    });
+
+    function showMessage(text, type='error') {
+      alertArea.innerHTML = '<div class="msg ' + (type==='success' ? 'success' : 'error') + '">' + text + '</div>';
+    }
+    function clearMessage() { alertArea.innerHTML = ''; }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearMessage();
+
+      const identifier = form.identifier.value.trim();
+      const password = form.password.value;
+      if (!identifier) return showMessage('Enter email or username.');
+      if (!password || password.length < 8) return showMessage('Enter your password (min 8 chars).');
+
+      submitBtn.disabled = true;
+      loader.style.display = 'inline-block';
+
+      try {
+        const res = await fetch(`${API_URL}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier, password })
+        });
+        const data = await res.json().catch(()=>({}));
+
+        if (res.ok) {
+          showMessage('Login successful. Redirecting...', 'success');
+          // store token if returned
+          if (data.token) localStorage.setItem('token', data.token);
+          setTimeout(()=> location.href = 'index.html', 800);
+        } else {
+          showMessage(data.message || data.error || 'Invalid credentials.');
+        }
+      } catch (err) {
+        showMessage('Cannot reach backend. Ensure server is running at ' + API_URL);
+        console.error(err);
+      } finally {
+        submitBtn.disabled = false;
+        loader.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>

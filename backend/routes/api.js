@@ -3,7 +3,7 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcrypt');
-const fetch = require('node-fetch'); // npm install node-fetch@2
+// Using built-in fetch (Node 18+)
 
 const usersFile = path.join(__dirname, '../users.json');
 
