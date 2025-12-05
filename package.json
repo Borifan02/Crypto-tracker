@@ -1,0 +1,11 @@
+{
+  "name": "crypto-tracker-system",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo 'Build complete'",
+    "start": "node backend/server.js"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}
