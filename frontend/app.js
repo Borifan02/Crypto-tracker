@@ -72,7 +72,8 @@ async function loadCoinChart(coinId, coinName) {
   try {
     detailTitle.textContent = `${coinName} Price Chart`;
     const days = chartDays.value;
-    const res = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`);
+    const res = await fetch(`/api/chart/${coinId}?days=${days}`);
+    if (!res.ok) throw new Error('Failed to fetch chart data');
     const data = await res.json();
     const labels = data.prices.map(p => new Date(p[0]).toLocaleDateString());
     const prices = data.prices.map(p => p[1]);

@@ -60,4 +60,18 @@ router.get('/coins', async (req, res) => {
   }
 });
 
+// Chart data endpoint
+router.get('/chart/:coinId', async (req, res) => {
+  try {
+    const { coinId } = req.params;
+    const { days = 7 } = req.query;
+    const response = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`);
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch chart data' });
+  }
+});
+
 module.exports = router;
