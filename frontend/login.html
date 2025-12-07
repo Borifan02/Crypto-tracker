@@ -83,7 +83,7 @@
   </div>
 
   <script>
-    const API_URL = "http://localhost:3000"; // adjust if needed
+    // Using relative API paths for deployment compatibility
     const form = document.getElementById('loginForm');
     const alertArea = document.getElementById('alertArea');
     const submitBtn = document.getElementById('submitBtn');
@@ -115,7 +115,7 @@
       loader.style.display = 'inline-block';
 
       try {
-        const res = await fetch(`${API_URL}/login`, {
+        const res = await fetch(`/api/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ identifier, password })
@@ -124,8 +124,7 @@
 
         if (res.ok) {
           showMessage('Login successful. Redirecting...', 'success');
-          // store token if returned
-          if (data.token) localStorage.setItem('token', data.token);
+          if (data.user) localStorage.setItem('ct_user', JSON.stringify(data.user));
           setTimeout(()=> location.href = 'index.html', 800);
         } else {
           showMessage(data.message || data.error || 'Invalid credentials.');

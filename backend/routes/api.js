@@ -1,51 +1,59 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
 const bcrypt = require('bcrypt');
+const User = require('../models/User');
 // Using built-in fetch (Node 18+)
-
-const usersFile = path.join(__dirname, '../users.json');
-
-// --- User Auth ---
-function readUsers() {
-  if (!fs.existsSync(usersFile)) return [];
-  const data = fs.readFileSync(usersFile);
-  return JSON.parse(data);
-}
-
-function writeUsers(users) {
-  fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
-}
 
 // Signup
 router.post('/signup', async (req, res) => {
-  const { name, email, password } = req.body;
-  if(!name || !email || !password) return res.status(400).json({ error: 'All fields required' });
+  try {
+    const { username, email, password } = req.body;
+    if(!username || !email || !password) return res.status(400).json({ error: 'All fields required' });
 
-  const users = readUsers();
-  if(users.find(u => u.email === email)) return res.status(400).json({ error: 'Email exists' });
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    if(existingUser) return res.status(400).json({ error: 'Email or username already exists' });
 
-  const hashed = await bcrypt.hash(password, 10);
-  users.push({ name, email, password: hashed });
-  writeUsers(users);
+    const hashed = await bcrypt.hash(password, 10);
+    const newUser = await User.create({ username, email, password: hashed });
 
-  res.json({ message: 'Signup successful' });
+    res.json({ 
+      message: 'Signup successful', 
+      user: { 
+        username: newUser.username, 
+        email: newUser.email, 
+        balanceUSD: newUser.balanceUSD, 
+        createdAt: newUser.createdAt 
+      } 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Login
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-  if(!email || !password) return res.status(400).json({ error: 'All fields required' });
+  try {
+    const { identifier, password } = req.body;
+    if(!identifier || !password) return res.status(400).json({ error: 'All fields required' });
 
-  const users = readUsers();
-  const user = users.find(u => u.email === email);
-  if(!user) return res.status(400).json({ error: 'User not found' });
+    const user = await User.findOne({ $or: [{ email: identifier }, { username: identifier }] });
+    if(!user) return res.status(400).json({ error: 'User not found' });
 
-  const match = await bcrypt.compare(password, user.password);
-  if(!match) return res.status(400).json({ error: 'Incorrect password' });
+    const match = await bcrypt.compare(password, user.password);
+    if(!match) return res.status(400).json({ error: 'Incorrect password' });
 
-  res.json({ message: `Welcome ${user.name}` });
+    res.json({ 
+      message: `Welcome ${user.username}`, 
+      user: { 
+        username: user.username, 
+        email: user.email, 
+        balanceUSD: user.balanceUSD, 
+        createdAt: user.createdAt 
+      } 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Coins endpoint

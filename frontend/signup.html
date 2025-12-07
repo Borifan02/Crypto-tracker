@@ -107,7 +107,7 @@
   </div>
 
   <script>
-    const API_URL = "http://localhost:3000"; // adjust if your backend path differs
+    // Using relative API paths for deployment compatibility
     const form = document.getElementById('signupForm');
     const alertArea = document.getElementById('alertArea');
     const submitBtn = document.getElementById('submitBtn');
@@ -147,7 +147,7 @@
       loader.style.display = 'inline-block';
 
       try {
-        const res = await fetch(`${API_URL}/signup`, {
+        const res = await fetch(`/api/signup`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, email, password })
@@ -156,8 +156,9 @@
         const data = await res.json().catch(()=>({}));
 
         if (res.ok) {
-          showMessage('Signup successful! Redirecting to login...', 'success');
-          setTimeout(()=> location.href = 'login.html', 1200);
+          showMessage('Signup successful! Redirecting...', 'success');
+          if (data.user) localStorage.setItem('ct_user', JSON.stringify(data.user));
+          setTimeout(()=> location.href = 'index.html', 1200);
         } else {
           const msg = data.message || data.error || 'Signup failed. Please try again.';
           showMessage(msg);
